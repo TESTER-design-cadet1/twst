@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Police MDT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div id="app" class="container mx-auto p-4">
+        <div class="bg-white shadow-md rounded-lg">
+            <header class="bg-blue-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+                <h1 class="text-2xl font-bold">Advanced Police Mobile Data Terminal</h1>
+                <div>
+                    <span id="currentUser" class="mr-4"></span>
+                    <span id="currentTime" class="mr-4"></span>
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded">Logout</button>
+                </div>
+            </header>
+
+            <div id="loginSection" class="p-6">
+                <h2 class="text-xl mb-4">Login</h2>
+                <input type="text" id="username" placeholder="Username" class="w-full p-2 border rounded mb-4">
+                <input type="password" id="password" placeholder="Password" class="w-full p-2 border rounded mb-4">
+                <button onclick="login()" class="w-full bg-blue-500 hover:bg-blue-600 text-white p-2 rounded">Login</button>
+            </div>
+
+            <div id="mainSection" class="hidden p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gray-100 p-4 rounded">
+                        <h3 class="text-lg font-semibold mb-4">Citizen Search</h3>
+                        <input type="text" id="citizenSearch" placeholder="Search by Name or ID" class="w-full p-2 border rounded mb-4">
+                        <div id="citizenResults" class="overflow-y-auto max-h-64"></div>
+                        <button onclick="openCreateCitizenModal()" class="mt-4 w-full bg-green-500 hover:bg-green-600 text-white p-2 rounded">
+                            Create New Citizen
+                        </button>
+                    </div>
+
+                    <div class="bg-gray-100 p-4 rounded">
+                        <h3 class="text-lg font-semibold mb-4">Vehicle Search</h3>
+                        <input type="text" id="vehicleSearch" placeholder="Search by Plate" class="w-full p-2 border rounded mb-4">
+                        <div id="vehicleResults" class="overflow-y-auto max-h-64"></div>
+                        <button onclick="openCreateVehicleModal()" class="mt-4 w-full bg-green-500 hover:bg-green-600 text-white p-2 rounded">
+                            Register New Vehicle
+                        </button>
+                    </div>
+
+                    <div class="bg-gray-100 p-4 rounded">
+                        <h3 class="text-lg font-semibold mb-4">Incident Reports</h3>
+                        <button onclick="openIncidentReportModal()" class="w-full bg-blue-500 hover:bg-blue-600 text-white p-2 rounded mb-4">
+                            Create Incident Report
+                        </button>
+                        <div id="incidentsList" class="overflow-y-auto max-h-64"></div>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-100 p-4 rounded">
+                        <h3 class="text-lg font-semibold mb-4">Active Warrants</h3>
+                        <div id="warrantsList" class="overflow-y-auto max-h-64"></div>
+                        <button onclick="openCreateWarrantModal()" class="mt-4 w-full bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded">
+                            Issue New Warrant
+                        </button>
+                    </div>
+
+                    <div class="bg-gray-100 p-4 rounded">
+                        <h3 class="text-lg font-semibold mb-4">Department Alerts</h3>
+                        <div id="departmentAlerts" class="overflow-y-auto max-h-64"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="createCitizenModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white p-6 rounded-lg w-96">
+            <h2 class="text-xl font-bold mb-4">Create New Citizen</h2>
+            <input type="text" id="newCitizenName" placeholder="Full Name" class="w-full p-2 border rounded mb-4">
+            <input type="date" id="newCitizenDOB" class="w-full p-2 border rounded mb-4">
+            <input type="text" id="newCitizenAddress" placeholder="Address" class="w-full p-2 border rounded mb-4">
+            <div class="flex justify-between">
+                <button onclick="createCitizen()" class="bg-green-500 hover:bg-green-600 text-white p-2 rounded">Create</button>
+                <button onclick="closeModal('createCitizenModal')" class="bg-red-500 hover:bg-red-600 text-white p-2 rounded">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="createVehicleModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white p-6 rounded-lg w-96">
+            <h2 class="text-xl font-bold mb-4">Register New Vehicle</h2>
+            <input type="text" id="newVehiclePlate" placeholder="License Plate" class="w-full p-2 border rounded mb-4">
+            <input type="text" id="newVehicleModel" placeholder="Vehicle Model" class="w-full p-2 border rounded mb-4">
+            <input type="text" id="newVehicleOwner" placeholder="Owner Name" class="w-full p-2 border rounded mb-4">
+            <div class="flex justify-between">
+                <button onclick="createVehicle()" class="bg-green-500 hover:bg-green-600 text-white p-2 rounded">Register</button>
+                <button onclick="closeModal('createVehicleModal')" class="bg-red-500 hover:bg-red-600 text-white p-2 rounded">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="incidentReportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white p-6 rounded-lg w-96">
+            <h2 class="text-xl font-bold mb-4">Create Incident Report</h2>
+            <select id="incidentType" class="w-full p-2 border rounded mb-4">
+                <option value="">Select Incident Type</option>
+                <option value="Traffic">Traffic Violation</option>
+                <option value="Assault">Assault</option>
+                <option value="Theft">Theft</option>
+                <option value="Suspicious">Suspicious Activity</option>
+            </select>
+            <textarea id="incidentDescription" placeholder="Incident Details" class="w-full p-2 border rounded mb-4" rows="4"></textarea>
+            <input type="text" id="incidentLocation" placeholder="Location" class="w-full p-2 border rounded mb-4">
+            <div class="flex justify-between">
+                <button onclick="createIncidentReport()" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded">Submit Report</button>
+                <button onclick="closeModal('incidentReportModal')" class="bg-red-500 hover:bg-red-600 text-white p-2 rounded">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="createWarrantModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white p-6 rounded-lg w-96">
+            <h2 class="text-xl font-bold mb-4">Issue New Warrant</h2>
+            <input type="text" id="warrantName" placeholder="Suspect Name" class="w-full p-2 border rounded mb-4">
+            <select id="warrantType" class="w-full p-2 border rounded mb-4">
+                <option value="">Select Warrant Type</option>
+                <option value="Arrest">Arrest Warrant</option>
+                <option value="Search">Search Warrant</option>
+                <option value="Bench">Bench Warrant</option>
+            </select>
+            <textarea id="warrantDetails" placeholder="Warrant Details" class="w-full p-2 border rounded mb-4" rows="4"></textarea>
+            <div class="flex justify-between">
+                <button onclick="createWarrant()" class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded">Issue Warrant</button>
+                <button onclick="closeModal('createWarrantModal')" class="bg-red-500 hover:bg-red-600 text-white p-2 rounded">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulated database with expanded functionality
+        let currentUser = null;
+        const users = [
+            { username: 'officer1', password: 'pass123', rank: 'Patrol', badge: 'PD-101' },
+            { username: 'sergeant', password: 'admin456', rank: 'Sergeant', badge: 'PD-202' }
+        ];
+
+        const citizens = [
+            { 
+                id: 'C001', 
+                name: 'John Doe', 
+                dob: '1990-05-15', 
+                address: '123 Main St',
+                warrants: [],
+                criminalRecord: [],
+                licenses: ['Driver']
+            },
+            { 
+                id: 'C002', 
+                name: 'Jane Smith', 
+                dob: '1985-11-22', 
+                address: '456 Oak Ave',
+                warrants: ['Unpaid Tickets'],
+                criminalRecord: ['Traffic Violation'],
+                licenses: []
+            }
+        ];
+
+        const vehicles = [
+            { 
+                plate: 'PD001', 
+                owner: 'John Doe', 
+                model: 'Sedan', 
+                color: 'Blue',
+                status: 'Clear',
+                registrationExpiry: '2025-12-31'
+            },
+            { 
+                plate: 'PD002', 
+                owner: 'Jane Smith', 
+                model: 'SUV', 
+                color: 'Red',
+                status: 'Stolen',
+                registrationExpiry: '2024-06-30'
+            }
+        ];
+
+        const warrants = [
+            { 
+                id: 'W001', 
+                name: 'John Smith', 
+                type: 'Arrest',
+                description: 'Wanted for Robbery',
+                issuedBy: 'Sergeant',
+                dateIssued: '2025-05-10'
+            },
+            { 
+                id: 'W002', 
+                name: 'Sarah Johnson', 
+                type: 'Bench',
+                description: 'Failure to Appear in Court',
+                issuedBy: 'Officer',
+                dateIssued: '2025-04-22'
+            }
+        ];
+
+        const incidents = [
+            {
+                id: 'I001',
+                type: 'Theft',
+                description: 'Shoplifting at Convenience Store',
+                location: '789 Market St',
+                reportedBy: 'Officer1',
+                dateReported: '2025-05-11'
+            }
+        ];
+
+        const departmentAlerts = [
+            {
+                id: 'A001',
+                type: 'High Priority',
+                message: 'Pursuit in Progress - Downtown Area',
+                timestamp: '2025-05-12 14:30'
+            }
+        ];
+
+        // Time and Date Functions
+        function updateCurrentTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString();
+        }
+
+        // Authentication Functions
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('mainSection').classList.remove('hidden');
+                document.getElementById('currentUser').textContent = `${user.username} (${user.rank}) - Badge: ${user.badge}`;
+                
+                // Load initial data
+                searchCitizens();
+                searchVehicles();
+                loadWarrants();
+                loadIncidents();
+                loadDepartmentAlerts();
+                
+                // Start time updates
+                setInterval(updateCurrentTime, 1000);
+                updateCurrentTime();
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('mainSection').classList.add('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('currentUser').textContent = '';
+        }
+
+        // Modal Functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            document.getElementById(modalId).classList.add('flex');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('flex');
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Citizen Functions
+        function openCreateCitizenModal() {
+            openModal('createCitizenModal');
+        }
+
+        function createCitizen() {
+            const name = document.getElementById('newCitizenName').value;
+            const dob = document.getElementById('newCitizenDOB').value;
+            const address = document.getElementById('newCitizenAddress').value;
+
+            if (!name || !dob || !address) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const newCitizen = {
+                id: `C${citizens.length + 1}`,
+                name,
+                dob,
+                address,
+                warrants: [],
+                criminalRecord: [],
+                licenses: []
+            };
+
+            citizens.push(newCitizen);
+            closeModal('createCitizenModal');
+            searchCitizens();
+            alert('Citizen created successfully!');
+        }
+
+        function searchCitizens
